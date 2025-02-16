@@ -1,0 +1,121 @@
+Виктор, [16.02.2025 5:26]
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Герои России - Оренбургская область</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш_ключ&lang=ru_RU"></script>
+    <style>
+        /* ... предыдущие стили ... */
+        .user-panel {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .user-panel span {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>Герои Оренбургской области</h1>
+        <div class="user-panel" id="userPanel">
+            <button onclick="showForm('register')">Зарегистрироваться</button>
+            <button onclick="showForm('login')">Войти</button>
+        </div>
+    </div>
+
+    <!-- Форма регистрации -->
+    <div id="registerForm" class="auth-form">
+        <h3>Регистрация</h3>
+        <input type="text" id="regUsername" placeholder="Логин">
+        <input type="password" id="regPassword" placeholder="Пароль">
+        <button onclick="register()">Создать аккаунт</button>
+        <button onclick="hideAllForms()">Отмена</button>
+    </div>
+
+    <!-- Форма входа -->
+    <div id="loginForm" class="auth-form">
+        <h3>Вход</h3>
+        <input type="text" id="loginUsername" placeholder="Логин">
+        <input type="password" id="loginPassword" placeholder="Пароль">
+        <button onclick="login()">Войти</button>
+        <button onclick="hideAllForms()">Отмена</button>
+    </div>
+
+    <!-- Остальная часть кода (карта и форма добавления героя) остается без изменений -->
+
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Логика форм
+        function showForm(formType) {
+            hideAllForms();
+            if(formType === 'register') document.getElementById('registerForm').style.display = 'block';
+            if(formType === 'login') document.getElementById('loginForm').style.display = 'block';
+        }
+
+        function hideAllForms() {
+            document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
+        }
+
+        // Регистрация (демо-версия с localStorage)
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            if(!username || !password) return alert('Заполните все поля!');
+
+            localStorage.setItem(username, JSON.stringify({
+                password: btoa(password), // В реальном проекте используйте хэширование
+                isAdmin: false
+            }));
+
+            alert('Регистрация успешна!');
+            hideAllForms();
+        }
+
+        // Вход
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const userData = JSON.parse(localStorage.getItem(username));
+
+            if(!userData || atob(userData.password) !== password) {
+                return alert('Неверные данные!');
+            }
+
+            currentUser = username;
+            isAdmin = userData.isAdmin;
+            updateUI();
+            hideAllForms();
+            alert(Добро пожаловать, ${username}!);
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            const userPanel = document.getElementById('userPanel');
+            userPanel.innerHTML = currentUser
+                ? <span>${currentUser}</span><button onclick="logout()">Выйти</button>
+                : <button onclick="showForm('register')">Зарегистрироваться</button>
+                   <button onclick="showForm('login')">Войти</button>;
+        }
+
+        // Выход
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            updateUI();
+        }
+
+Виктор, [16.02.2025 5:26]
+// Инициализация при загрузке
+        updateUI();
+
+        /* Остальной код (работа с картой и героями) остается без изменений */
+    </script>
+</body>
+</html>

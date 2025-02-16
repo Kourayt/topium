@@ -1,0 +1,130 @@
+Виктор, [16.02.2025 13:50]
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Герои Оренбургской области</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш_ключ&lang=ru_RU"></script>
+    <style>
+        /* Основные стили */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: url('ВАША_ФОНОВАЯ_КАРТИНКА.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Блок для главного изображения героя */
+        .hero-header {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .hero-header img {
+            width: 300px;
+            height: 400px;
+            object-fit: cover;
+            border: 5px solid gold;
+            border-radius: 10px;
+        }
+
+        /* Остальные стили из предыдущей версии */
+        .gallery { ... }
+        .upload-section { ... }
+        /* Добавьте остальные стили из предыдущего решения */
+    </style>
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <div class="navbar">
+        <!-- Логотип сайта -->
+        <img src="ЛОГОТИП.png" alt="Логотип" style="height: 50px;">
+        <h1 style="color: white;">Герои Оренбургской области</h1>
+        <div class="user-panel" id="userPanel">...</div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Блок для главного героя -->
+        <div class="hero-header">
+            <!-- Вставить основное изображение героя -->
+            <img src="ОСНОВНОЙ_ГЕРОЙ.jpg" alt="Главный герой">
+            <h2>Имя главного героя</h2>
+        </div>
+
+        <!-- Галерея героев -->
+        <div class="gallery" id="imageGallery">
+            <!-- Пример элемента героя -->
+            <div class="gallery-item">
+                <!-- Вставить изображение героя -->
+                <img src="ГЕРОЙ_1.jpg" alt="Герой 1">
+                <div class="hero-info">
+                    <h3>Имя героя</h3>
+                    <p>Описание подвига</p>
+                </div>
+            </div>
+            <!-- Добавьте другие элементы героев аналогично -->
+        </div>
+
+        <!-- Форма добавления героя -->
+        <div id="addHeroForm" class="auth-form">
+            <h3>Добавить нового героя</h3>
+            <input type="text" id="heroName" placeholder="Имя героя">
+            <textarea id="heroDescription" placeholder="Описание подвига"></textarea>
+
+            <!-- Поле для загрузки изображения -->
+            <input type="file" id="heroImage" accept="image/*">
+            <img src="#" class="hero-image-preview" alt="Предпросмотр">
+
+            <button onclick="addHero()">Добавить</button>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script>
+        // Весь предыдущий функционал сохраняется
+        // Добавьте скрипты из предыдущего решения
+
+        // Пример данных для героев
+        const heroes = [
+            {
+                name: "Иван Петров",
+                description: "Совершил подвиг в ...",
+                image: "ГЕРОЙ_1.jpg"
+            },
+            // Добавьте других героев
+        ];
+
+        function initGallery() {
+            const gallery = document.getElementById('imageGallery');
+            heroes.forEach(hero => {
+                const heroElement = document.createElement('div');
+                heroElement.className = 'gallery-item';
+                heroElement.innerHTML = `
+                    <img src="${hero.image}" alt="${hero.name}">
+                    <div class="hero-info">
+                        <h3>${hero.name}</h3>
+
+Виктор, [16.02.2025 13:50]
+<p>${hero.description}</p>
+                    </div>
+                `;
+                gallery.appendChild(heroElement);
+            });
+        }
+
+        window.onload = function() {
+            initGallery();
+            // Остальная логика инициализации
+        };
+    </script>
+</body>
+</html>
