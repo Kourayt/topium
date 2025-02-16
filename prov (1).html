@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нейросеть для анализа текста</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Нейросеть для анализа текста</h1>
+        <textarea id="inputText" placeholder="Введите текст для анализа..."></textarea>
+        <button onclick="analyzeText()">Анализировать</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function analyzeText() {
+            const inputText = document.getElementById('inputText').value;
+            const resultDiv = document.getElementById('result');
+
+            if (!inputText) {
+                resultDiv.innerHTML = '<p>Пожалуйста, введите текст для анализа.</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Обработка...</p>';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: inputText }),
+                });
+
+                const data = await response.json();
+                resultDiv.innerHTML = <p><strong>Результат:</strong> ${data.result}</p>;
+            } catch (error) {
+                resultDiv.innerHTML = <p>Ошибка: ${error.message}</p>;
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+<div class="navbar">
+    <h1>Книга Памяти Оренбургской области</h1>
+    <div class="user-panel" id="userPanel">
+        <button onclick="showForm('register')">Регистрация</button>
+        <button onclick="showForm('login')">Войти</button>
+        <a href="neural_network.html" style="color: white; text-decoration: none; margin-left: 15px;">Нейросеть</a>
+    </div>
+</div>
