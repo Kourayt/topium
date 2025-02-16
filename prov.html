@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Книга Памяти Оренбургской области</title>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=ваш_ключ&lang=ru_RU"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: url('фон.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-panel {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .user-panel span {
+            color: #fff;
+        }
+
+        .hero-header {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .hero-info {
+            padding: 15px;
+        }
+
+        .auth-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .hero-image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+            margin: 10px 0;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1 style="color: white;">Книга Памяти Оренбургской области</h1>
+        <div class="user-panel" id="userPanel">
+            <button onclick="showForm('register')">Зарегистрироваться</button>
+            <button onclick="showForm('login')">Войти</button>
+        </div>
+    </div>
+
+    <!-- Формы авторизации -->
+    <div id="registerForm" class="auth-form">
+        <h3>Регистрация</h3>
+        <input type="text" id="regUsername" placeholder="Логин">
+        <input type="password" id="regPassword" placeholder="Пароль">
+        <button onclick="register()">Создать аккаунт</button>
+        <button onclick="hideAllForms()">Отмена</button>
+    </div>
+
+    <div id="loginForm" class="auth-form">
+        <h3>Вход</h3>
+        <input type="text" id="loginUsername" placeholder="Логин">
+        <input type="password" id="loginPassword" placeholder="Пароль">
+        <button onclick="login()">Войти</button>
+        <button onclick="hideAllForms()">Отмена</button>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <div id="map"></div>
+
+        <div class="gallery" id="imageGallery"></div>
+        <!-- Форма добавления героя (только для админа) -->
+                <div id="addHeroForm" class="auth-form">
+                    <h3>Добавить нового героя</h3>
+                    <input type="text" id="heroName" placeholder="Имя героя">
+                    <textarea id="heroDescription" placeholder="Описание подвига"></textarea>
+                    <input type="file" id="heroImage" accept="image/*" onchange="previewImage(this)">
+                    <img src="#" class="hero-image-preview" alt="Предпросмотр">
+                    <button onclick="addHero()">Добавить</button>
+                    <button onclick="hideAllForms()">Отмена</button>
+                </div>
+            </div>
+
+            <script>
+                let currentUser = null;
+                let isAdmin = false;
+                let heroes = JSON.parse(localStorage.getItem('heroes')) || [];
+
+                // Авторизация
+                function showForm(formType) {
+                    hideAllForms();
+                    document.getElementById(`${formType}Form`).style.display = 'block';
+                }
+
+                function hideAllForms() {
+                    document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
+                }
+
+                function register() {
+                    const username = document.getElementById('regUsername').value;
+                    const password = document.getElementById('regPassword').value;
+
+                    if (!username || !password) return alert('Заполните все поля!');
+                    if (localStorage.getItem(username)) return alert('Пользователь уже существует!');
+
+                    localStorage.setItem(username, JSON.stringify({
+                        password: btoa(password),
+                        isAdmin: username === 'admin' // Первый пользователь admin
+                    }));
+
+                    alert('Регистрация успешна!');
+                    hideAllForms();
+                }
+
+                function login() {
+                    const username = document.getElementById('loginUsername').value;
+                    const password = document.getElementById('loginPassword').value;
+                    const userData = JSON.parse(localStorage.getItem(username));
+
+                    if (!userData || atob(userData.password) !== password) {
+                        return alert('Неверные данные!');
+                    }
+
+                    currentUser = username;
+                    isAdmin = userData.isAdmin;
+                    updateUI();
+                    hideAllForms();
+                    alert(`Добро пожаловать, ${username}!`);
+                    initGallery();
+                }
+
+                function logout() {
+                    currentUser = null;
+                    isAdmin = false;
+                    updateUI();
+                }
+
+                function updateUI() {
+                    const userPanel = document.getElementById('userPanel');
+                    userPanel.innerHTML = currentUser
+                        ? `<span>${currentUser}</span>
+                           <button onclick="logout()">Выйти</button>
+                           ${isAdmin ? '<button onclick="showForm(\'addHero\')">Добавить героя</button>' : ''}`
+                        : `<button onclick="showForm('register')">Зарегистрироваться</button>
+                           <button onclick="showForm('login')">Войти</button>`;
+                }
+
+                // Работа с героями
+                function previewImage(input) {
+                    const preview = document.querySelector('.hero-image-preview');
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => preview.src = e.target.result;
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+
+                function addHero() {
+                    if (!isAdmin) return alert('Доступ запрещен!');
+
+                    const name = document.getElementById('heroName').value;
+                    const description = document.getElementById('heroDescription').value;
+                    const image = document.getElementById('heroImage').files[0];
+
+                    if (!name || !description || !image) return alert('Заполните все поля!');
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        heroes.push({
+                            name,
+                            description,
+                            image: e.target.result
+                        });
+                        localStorage.setItem('heroes', JSON.stringify(heroes));
+                        initGallery();
+                hideAllForms();
+            };
+            reader.readAsDataURL(image);
+        }
+
+        function initGallery() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = '';
+            heroes.forEach(hero => {
+                const heroElement = document.createElement('div');
+                heroElement.className = 'gallery-item';
+                heroElement.innerHTML = `
+                    <img src="${hero.image}" alt="${hero.name}">
+                    <div class="hero-info">
+                        <h3>${hero.name}</h3>
+                        <p>${hero.description}</p>
+                    </div>
+                `;
+                gallery.appendChild(heroElement);
+            });
+        }
+
+        // Инициализация карты
+        function initMap() {
+            ymaps.ready(function () {
+                const map = new ymaps.Map('map', {
+                    center: [51.7682, 55.0968], // Центр Оренбургской области
+                    zoom: 7
+                });
+
+                const regions = {
+                    'Тонкий': [[51.5, 55.5], [52.0, 56.0]],
+                    'Первомайский': [[52.5, 55.5], [53.0, 56.0]],
+                    'Сарактический': [[53.5, 55.5], [54.0, 56.0]]
+                };
+
+                Object.keys(regions).forEach(region => {
+                    const polygon = new ymaps.Polygon([
+                        regions[region]
+                    ], {
+                        hintContent: region
+                    }, {
+                        fillColor: '#00FF00',
+                        strokeColor: '#0000FF',
+                        opacity: 0.5
+                    });
+
+                    polygon.events.add('click', function () {
+                        const gallery = document.getElementById('imageGallery');
+                        gallery.innerHTML = '';
+                        heroes.filter(h => h.region === region).forEach(hero => {
+                            const heroElement = document.createElement('div');
+                            heroElement.className = 'gallery-item';
+                            heroElement.innerHTML = `
+                                <img src="${hero.image}" alt="${hero.name}">
+                                <div class="hero-info">
+                                    <h3>${hero.name}</h3>
+                                    <p>${hero.description}</p>
+                                </div>
+                            `;
+                            gallery.appendChild(heroElement);
+                        });
+                    });
+
+                    map.geoObjects.add(polygon);
+                });
+            });
+        }
+
+        // Инициализация
+        window.onload = () => {
+            updateUI();
+            initGallery();
+            initMap();
+        };
+    </script>
+</body>
+</html>
